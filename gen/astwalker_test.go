@@ -7,6 +7,7 @@ import (
 	"go/token"
 	"github.com/stretchr/testify/assert"
 	"os"
+	"flag"
 )
 
 func TestGrabNodes(t *testing.T) {
@@ -18,6 +19,8 @@ func TestGrabNodes(t *testing.T) {
 		panic(err)
 	}
 
-	targets := gen.GrabNodes(f)
-	assert.Equal(t, 2, targets.Len())
+	options := flag.NewFlagSet("", flag.ContinueOnError)
+	optcopy := *options
+	targets := gen.GrabNodes(f, optcopy)
+	assert.Equal(t, 2, targets.TransformationCount())// targets.Len())
 }

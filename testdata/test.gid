@@ -5,7 +5,10 @@ import (
 	"_template_"
 )
 
+//Define the type order.
+type template func (sometype, othertype)
+
 func main() {
-	x := _t_.sometype
+	var x sometype
 	m, e := regexp.Match("!", "sss").check()
 }
