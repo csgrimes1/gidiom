@@ -4,9 +4,17 @@ import (
 	"go/ast"
 	"container/list"
 	"flag"
+	"fmt"
 )
 
-type Matcher func(stack NodeStack, options flag.FlagSet) bool
+type MatchResult uint
+const (
+	NoMatch  MatchResult = iota
+	Match
+	Stop
+)
+
+type Matcher func(stack NodeStack, options flag.FlagSet) MatchResult
 
 type NodeHandler struct {
 	stack *NodeStack
@@ -26,31 +34,40 @@ type astWalker struct {
 	xformTargets list.List
 }
 
+func (walker *astWalker) Visit(node Node) (w Visitor) {
+
+}
+
 var generators = []NodeAnalyzer {
 	NodeAnalyzer{match: MatchCheckCall, manipulate: ReplaceCheckCall},
 	NodeAnalyzer{match: MatchGenericTypeRef, manipulate: GenericGenerator},
 }
 
 func (state *astWalker) walk (n ast.Node) bool {
+	fmt.Println("---a", (*state.stack).Size())
 	x := (*state.stack).Push(&n)
 	state.stack = &x
-	nh, res := checkNode(n, state.stack, state.options)
+	fmt.Println("...b", (*state.stack).Size())
+	nh, _ := checkNode(n, state.stack, state.options)
 	if nh != nil {
 		state.xformTargets.PushBack(nh)
 	}
-	_, state.stack = (*state.stack).Pop()
-	return res;
+	_, state.stack = x.Pop()
+	return true;
 }
 
 func checkNode(n ast.Node, stack *NodeStack, options flag.FlagSet) (*NodeHandler, bool) {
 	for _,generator := range generators {
-		if generator.match(*stack, options) {
+		switch generator.match(*stack, options) {
+		case Match:
 			nh := NodeHandler{
 				stack: stack,
 				manipulate: generator.manipulate,
 				getService: generator.getService,
 			}
 			return &nh, true
+		case Stop:
+			return nil, false
 		}
 	}
 	//nh := nodeHandler{stack: stack}

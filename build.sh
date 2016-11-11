@@ -8,6 +8,8 @@ MYGOPATH=${MYDIR:LEN}
 
 ARDIRS=( $(ls -1F "$MYDIR" | grep '/') )
 
-go build "$MYGOPATH/cli"
-go test "$MYGOPATH/gen"
-go install "$MYGOPATH/cli"
+go build "$MYGOPATH/core"
+#go build "$MYGOPATH/cli"
+#go test "$MYGOPATH/gen"
+go test "$MYGOPATH/core"
+#go install "$MYGOPATH/cli"

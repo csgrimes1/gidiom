@@ -5,18 +5,18 @@ import (
 	"flag"
 )
 
-func MatchGenericTypeRef(stack NodeStack, options flag.FlagSet) bool {
+func MatchGenericTypeRef(stack NodeStack, options flag.FlagSet) MatchResult {
 	var top interface{} = stack.Peek()
 	switch x := top.(type) {
 	case *ast.SelectorExpr:
 		switch y := x.X.(type) {
 		case *ast.Ident:
 			if y.Name == "_t_" {
-				return true
+				return Match
 			}
 		}
 	}
-	return false;
+	return NoMatch
 }
 
 func GenericGenerator(stack NodeStack, context TransformContext) error {
