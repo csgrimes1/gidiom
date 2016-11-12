@@ -1,4 +1,4 @@
-package core
+package iterate
 
 type Iterator struct {
 	HasValue     func() bool
@@ -10,7 +10,9 @@ type Iterable interface {
 	Iterate() Iterator
 }
 
-func (it Iterator) Map(mapper func(Any) Any) Iterator {
+type MappingCallback func(Any) Any
+
+func (it Iterator) Map(mapper MappingCallback) Iterator {
 	currentValue := func () Any {
 		return mapper(it.CurrentValue())
 	}
@@ -20,12 +22,42 @@ func (it Iterator) Map(mapper func(Any) Any) Iterator {
 	return Iterator {HasValue: it.HasValue, Next: next, CurrentValue: currentValue}
 }
 
+type Predicate func(Any) bool
+
+func (it Iterator) Filter(predicate Predicate) Iterator {
+	for it.HasValue() && !predicate(it.CurrentValue()) {
+		it = it.Next()
+	}
+
+	currentValue := func () Any {
+		return it.CurrentValue()
+	}
+	next := func () Iterator {
+		return it.Next().Filter(predicate)
+	}
+
+	return Iterator {HasValue: it.HasValue, Next: next, CurrentValue: currentValue}
+}
+
 func (it Iterator) Count() int {
 	count := 0
 	for current := it; current.HasValue(); current = current.Next() {
 		count = count + 1
 	}
 	return count
+}
+
+func (it Iterator) Take(count uint64) Iterator {
+	currentValue := func () Any {
+		return it.CurrentValue()
+	}
+	next := func () Iterator {
+		return it.Next().Take(count - 1)
+	}
+	hasValue := func () bool {
+		return count > 0
+	}
+	return Iterator {HasValue: hasValue, Next: next, CurrentValue: currentValue}
 }
 
 func (it Iterator) Skip(number uint64) Iterator {
@@ -44,3 +76,4 @@ func (it Iterator) ToSlice() []Any {
 	}
 	return accum
 }
+

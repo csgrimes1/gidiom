@@ -1,8 +1,8 @@
-package core
+package iterate
 
 type Sequencer func(context Any) (Any, Any)
 
-func IterateSequence(generator Sequencer, startingContext Any) Iterator {
+func CreateSequence(startingContext Any, generator Sequencer) Iterator {
 	context, val := generator(startingContext)
 
 	hasValue := func () bool {
@@ -12,7 +12,7 @@ func IterateSequence(generator Sequencer, startingContext Any) Iterator {
 		return val
 	}
 	next := func () Iterator {
-		return IterateSequence(generator, context)
+		return CreateSequence(context, generator)
 	}
 
 	return Iterator {HasValue: hasValue, CurrentValue: currentValue, Next: next}

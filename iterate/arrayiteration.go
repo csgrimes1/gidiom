@@ -1,4 +1,4 @@
-package core
+package iterate
 
 func CreateArrayIterator(ar []Any) Iterator {
 	hasValue := func () bool {

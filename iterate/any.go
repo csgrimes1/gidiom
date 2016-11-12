@@ -1,4 +1,4 @@
-package core
+package iterate
 
 type Any struct {
 	value interface{}

@@ -1,4 +1,4 @@
-package core
+package iterate
 
 type Maybe struct {
 	value []Any
