@@ -30,3 +30,19 @@ func TestToFloat(t *testing.T) {
 	assert.Equal(t, float64(-64), iterate.CreateAny("-64").To().Float64())
 }
 
+func TestToBool(t *testing.T) {
+	assert.Equal(t, true, iterate.CreateAny(1).To().Bool())
+	assert.Equal(t, false, iterate.CreateAny(0).To().Bool())
+	assert.Equal(t, true, iterate.CreateAny(uint(1)).To().Bool())
+	assert.Equal(t, false, iterate.CreateAny(uint16(0)).To().Bool())
+	assert.Equal(t, true, iterate.CreateAny(float32(10)).To().Bool())
+	assert.Equal(t, false, iterate.CreateAny(float64(0)).To().Bool())
+	assert.Equal(t, true, iterate.CreateAny("true").To().Bool())
+	assert.Equal(t, false, iterate.CreateAny("FALSE").To().Bool())
+}
+
+func TestToString(t *testing.T) {
+	assert.Equal(t, "true", iterate.CreateAny(true).To().String())
+	assert.Equal(t, "1", iterate.CreateAny(1).To().String())
+	assert.Equal(t, "1.01", iterate.CreateAny(1.01).To().String())
+}

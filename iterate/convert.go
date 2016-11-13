@@ -8,6 +8,7 @@ import (
 var int64Type = reflect.TypeOf(int64(1))
 var uint64Type = reflect.TypeOf(uint64(1))
 var float64Type = reflect.TypeOf(float64(1.0))
+var boolType = reflect.TypeOf(false)
 
 type Converter struct {
 	value interface{}
@@ -82,21 +83,60 @@ func (c Converter) Uint() uint {
 
 func (c Converter) Float64() float64 {
 	var err interface{}
-	var i float64
+	var f float64
 	switch x := c.value.(type) {
 	case string:
-		i, err = strconv.ParseFloat(x, 64)
+		f, err = strconv.ParseFloat(x, 64)
 	default:
-		i = reflect.ValueOf(c.value).Convert(float64Type).Interface().(float64)
+		f = reflect.ValueOf(c.value).Convert(float64Type).Interface().(float64)
 	}
 	if err != nil {
 		panic(err)
 	}
-	return i
+	return f
 }
 
 func (c Converter) Float32() float32 {
 	return float32(c.Float64())
+}
+
+func (c Converter) Bool() bool {
+	var err interface{}
+	var b bool
+	switch x := c.value.(type) {
+	case string:
+		b, err = strconv.ParseBool(x)
+	case int64:
+		b = (x != 0)
+	case int32:
+		b = (x != 0)
+	case int16:
+		b = (x != 0)
+	case int8:
+		b = (x != 0)
+	case int:
+		b = (x != 0)
+	case uint64:
+		b = (x != 0)
+	case uint32:
+		b = (x != 0)
+	case uint16:
+		b = (x != 0)
+	case uint8:
+		b = (x != 0)
+	case uint:
+		b = (x != 0)
+	case float64:
+		b = (x != 0.0)
+	case float32:
+		b = (x != 0.0)
+	default:
+		b = reflect.ValueOf(c.value).Convert(boolType).Interface().(bool)
+	}
+	if err != nil {
+		panic(err)
+	}
+	return b
 }
 
 func (c Converter) String() string {
