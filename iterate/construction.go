@@ -67,3 +67,16 @@ func GENERATOR(generator interface{}) Sequencer {
 		return CreateAny(results[0].Interface()), CreateAny(results[1].Interface())
 	}
 }
+
+func REDUCER(reducer interface{}) Reducer {
+	fv := reflect.ValueOf(reducer)
+
+	return func(accum Any, element Any) Any {
+		accumValue := reflect.ValueOf(accum.RawValue())
+		elementValue := reflect.ValueOf(element.RawValue())
+		inputs := []reflect.Value{accumValue, elementValue}
+		results := fv.Call(inputs)
+		return CreateAny(results[0].Interface())
+	}
+}
+

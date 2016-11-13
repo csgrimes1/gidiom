@@ -1,10 +1,11 @@
 package iterate_test
 
 import (
-	"strconv"
-	"github.com/csgrimes1/gidiom/iterate"
-	"testing"
 	"github.com/stretchr/testify/assert"
+	"github.com/csgrimes1/gidiom/iterate"
+	"reflect"
+	"strconv"
+	"testing"
 )
 
 func TestCount0(t *testing.T) {
@@ -62,13 +63,20 @@ func TestFilter(t *testing.T) {
 	assert.Equal(t, -1, slice[3].RawValue())
 }
 
-func TestTake(t *testing.T) {
-	fib := func (trail []int) ([]int, int) {
-		next := trail[0] + trail[1]
-		return []int{trail[1], next}, next
-	}
+func fib (trail []int) ([]int, int) {
+	next := trail[0] + trail[1]
+	return []int{trail[1], next}, next
+}
+
+func fibonacci() iterate.Iterator {
 	startingContext := iterate.CreateAny([]int{0, 1})
-	slice := iterate.CreateSequence(startingContext, iterate.GENERATOR(fib)).Take(5).ToSlice()
+	return iterate.CreateSequence(startingContext, iterate.GENERATOR(fib))
+}
+
+func TestTake(t *testing.T) {
+	slice := fibonacci().
+		Take(5).
+		ToSlice()
 	assert.Equal(t, 5, len(slice))
 	assert.Equal(t, 1, slice[0].RawValue())
 	assert.Equal(t, 2, slice[1].RawValue())
@@ -76,3 +84,25 @@ func TestTake(t *testing.T) {
 	assert.Equal(t, 5, slice[3].RawValue())
 	assert.Equal(t, 8, slice[4].RawValue())
 }
+
+func TestReduce(t *testing.T) {
+	sum := fibonacci().
+		Take(5).
+		Reduce(iterate.CreateAny(0), iterate.REDUCER(func(accum int, element int) int {
+			return accum + element
+		}))
+
+	assert.Equal(t, 19, sum.RawValue())
+}
+
+func TestTypedSlice(t *testing.T) {
+	converter := func(n int) string {
+		return strconv.Itoa(n)
+	}
+	slice := fibonacci().
+		Take(5).
+		ToTypedSlice(reflect.TypeOf(""), iterate.MAP(converter))
+
+	assert.Equal(t, []string{"1","2","3","5","8"}, slice)
+}
+

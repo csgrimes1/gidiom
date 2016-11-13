@@ -1,5 +1,7 @@
 package iterate
 
+import "reflect"
+
 type Iterator struct {
 	HasValue     func() bool
 	CurrentValue func() Any
@@ -69,11 +71,32 @@ func (it Iterator) Skip(number uint64) Iterator {
 	return current
 }
 
+type Reducer func(accum Any, element Any) (Any)
+
+func (it Iterator) Reduce(initialValue Any, reducer Reducer) Any {
+	accum := initialValue
+	for cursor:=it; cursor.HasValue(); cursor = cursor.Next() {
+		accum = reducer(accum, cursor.CurrentValue())
+	}
+	return accum;
+}
+
 func (it Iterator) ToSlice() []Any {
 	accum := make([]Any, 0, 16)
 	for current := it; current.HasValue(); current = current.Next() {
 		accum = append(accum, current.CurrentValue())
 	}
 	return accum
+}
+
+func (it Iterator) ToTypedSlice(t reflect.Type, converter MappingCallback) interface{} {
+	sliceType := reflect.SliceOf(t)
+	sliceValue := reflect.MakeSlice(sliceType, 0, 16)
+	for current := it; current.HasValue(); current = current.Next() {
+		finalElement := reflect.ValueOf(converter(current.CurrentValue()).RawValue())
+
+		sliceValue = reflect.Append(sliceValue, finalElement)
+	}
+	return sliceValue.Interface()
 }
 
