@@ -1,6 +1,9 @@
 package iterate
 
-import "reflect"
+import (
+	"container/list"
+	"reflect"
+)
 
 type Iterator struct {
 	HasValue     func() bool
@@ -81,6 +84,10 @@ func (it Iterator) Reduce(initialValue Any, reducer Reducer) Any {
 	return accum;
 }
 
+func (it Iterator) Reverse() Iterator {
+
+}
+
 func (it Iterator) ToSlice() []Any {
 	accum := make([]Any, 0, 16)
 	for current := it; current.HasValue(); current = current.Next() {
@@ -89,7 +96,11 @@ func (it Iterator) ToSlice() []Any {
 	return accum
 }
 
-func (it Iterator) ToTypedSlice(t reflect.Type, converter MappingCallback) interface{} {
+func IdentityMapping(v Any) Any {
+	return v
+}
+
+func (it Iterator) ToTypedSliceM(t reflect.Type, converter MappingCallback) interface{} {
 	sliceType := reflect.SliceOf(t)
 	sliceValue := reflect.MakeSlice(sliceType, 0, 16)
 	for current := it; current.HasValue(); current = current.Next() {
@@ -100,3 +111,6 @@ func (it Iterator) ToTypedSlice(t reflect.Type, converter MappingCallback) inter
 	return sliceValue.Interface()
 }
 
+func (it Iterator) ToTypedSlice(t reflect.Type) interface{} {
+	return it.ToTypedSliceM(t, IdentityMapping)
+}

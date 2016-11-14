@@ -95,14 +95,26 @@ func TestReduce(t *testing.T) {
 	assert.Equal(t, 19, sum.RawValue())
 }
 
-func TestTypedSlice(t *testing.T) {
+func TestTypedSliceM(t *testing.T) {
 	converter := func(n int) string {
 		return strconv.Itoa(n)
 	}
 	slice := fibonacci().
 		Take(5).
-		ToTypedSlice(reflect.TypeOf(""), iterate.MAP(converter))
+		ToTypedSliceM(reflect.TypeOf(""), iterate.MAP(converter))
 
 	assert.Equal(t, []string{"1","2","3","5","8"}, slice)
 }
 
+func TestTypedSlice(t *testing.T) {
+	slice := fibonacci().
+		Take(5).
+		ToTypedSlice(reflect.TypeOf(0))
+
+	assert.Equal(t, []int{1, 2, 3, 5, 8}, slice)
+}
+
+func TestIdentityMapping(t *testing.T) {
+	res := iterate.IdentityMapping(iterate.CreateAny(200))
+	assert.Equal(t, 200, res.RawValue())
+}
