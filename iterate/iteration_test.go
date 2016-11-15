@@ -118,3 +118,28 @@ func TestIdentityMapping(t *testing.T) {
 	res := iterate.IdentityMapping(iterate.CreateAny(200))
 	assert.Equal(t, 200, res.RawValue())
 }
+
+func TestReverseIterator(t *testing.T) {
+	slice := fibonacci().
+		Take(5).
+		Reverse().
+		ToTypedSlice(reflect.TypeOf(0))
+
+	assert.Equal(t, []int{8, 5, 3, 2, 1}, slice)
+}
+
+func TestReverseOnInfiniteSeq(t *testing.T) {
+	assert.Panics(t, func () {
+		fibonacci().Reverse()
+	})
+}
+
+func TestSort(t *testing.T) {
+	sorter := func(a, b int) bool {
+		return a < b
+	}
+	slice := iterate.IterateOver(89, 20, 100, 0, 50).
+		Sort(iterate.LESS(sorter)).
+		ToTypedSlice(reflect.TypeOf(0))
+	assert.Equal(t, []int{0, 20, 50, 89, 100}, slice)
+}

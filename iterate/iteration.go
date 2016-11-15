@@ -2,13 +2,17 @@ package iterate
 
 import (
 	"container/list"
+	"errors"
 	"reflect"
+	"sort"
 )
 
 type Iterator struct {
 	HasValue     func() bool
 	CurrentValue func() Any
 	Next         func() Iterator
+	//Traits
+	Infinite     func() bool
 }
 
 type Iterable interface {
@@ -85,7 +89,15 @@ func (it Iterator) Reduce(initialValue Any, reducer Reducer) Any {
 }
 
 func (it Iterator) Reverse() Iterator {
+	if it.Infinite != nil && it.Infinite() {
+		panic(errors.New("Cannot reverse infinite sequence"))
+	}
 
+	list := list.New()
+	for current := it; current.HasValue(); current = current.Next() {
+		list.PushBack(current.CurrentValue().RawValue())
+	}
+	return CreateListIterator(list, false)
 }
 
 func (it Iterator) ToSlice() []Any {
@@ -113,4 +125,23 @@ func (it Iterator) ToTypedSliceM(t reflect.Type, converter MappingCallback) inte
 
 func (it Iterator) ToTypedSlice(t reflect.Type) interface{} {
 	return it.ToTypedSliceM(t, IdentityMapping)
+}
+
+
+type ByAny struct {
+	slice []Any
+	less  func(a, b Any) bool
+}
+
+func (ar ByAny) Len() int           { return len(ar.slice) }
+func (ar ByAny) Swap(i, j int)      { ar.slice[i], ar.slice[j] = ar.slice[j], ar.slice[i] }
+func (ar ByAny) Less(i, j int) bool { return ar.less(ar.slice[i], ar.slice[j]) }
+
+type LessCallback func(a, b Any) bool
+
+func (it Iterator) Sort(less LessCallback) Iterator {
+	slice := it.ToSlice()
+	controller := ByAny{slice: slice, less: less}
+	sort.Sort(controller)
+	return CreateArrayIterator(slice)
 }

@@ -1,7 +1,6 @@
 package iterate
 
 import (
-	"fmt"
 	"reflect"
 )
 
@@ -25,7 +24,7 @@ func Start(data interface{}) Iterator {
 	case reflect.Slice:
 		return forArray(v)
 	case reflect.Map:
-		fmt.Printf("map: %v\n", v.Interface())
+		return CreateMapIterator(data)
 	default:
 		any := CreateAny(data)
 		maybe := CreateMaybe(&any)
@@ -33,6 +32,10 @@ func Start(data interface{}) Iterator {
 	}
 
 	return Iterator{}
+}
+
+func IterateOver(elements ...interface{}) Iterator {
+	return Start(elements)
 }
 
 func MAP(mappingFunc interface{}) MappingCallback {
@@ -77,6 +80,18 @@ func REDUCER(reducer interface{}) Reducer {
 		inputs := []reflect.Value{accumValue, elementValue}
 		results := fv.Call(inputs)
 		return CreateAny(results[0].Interface())
+	}
+}
+
+func LESS(less interface{}) LessCallback {
+	fv := reflect.ValueOf(less)
+
+	return func(a Any, b Any) bool {
+		aValue := reflect.ValueOf(a.RawValue())
+		bValue := reflect.ValueOf(b.RawValue())
+		inputs := []reflect.Value{aValue, bValue}
+		results := fv.Call(inputs)
+		return results[0].Interface().(bool)
 	}
 }
 

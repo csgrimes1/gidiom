@@ -14,6 +14,9 @@ func CreateSequence(startingContext Any, generator Sequencer) Iterator {
 	next := func () Iterator {
 		return CreateSequence(context, generator)
 	}
+	infinite := func () bool {
+		return true
+	}
 
-	return Iterator {HasValue: hasValue, CurrentValue: currentValue, Next: next}
+	return Iterator {HasValue: hasValue, CurrentValue: currentValue, Next: next, Infinite: infinite}
 }
